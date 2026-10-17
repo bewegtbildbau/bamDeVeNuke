@@ -1,0 +1,98 @@
+Group {
+ name bamDeVe
+ knobChanged "import vignette_solve\nvignette_solve.knob_changed(nuke.thisNode(), nuke.thisKnob())"
+ tile_color 0x7f5f00ff
+ note_font_size 14
+ addUserKnob {20 vig l "Vignette from Motion"}
+ addUserKnob {26 info l "" +STARTLINE T "Estimate a lens vignette from motion.\nInputs:  0 = plate   1 = flow (SmartVector / RAFT)\nReads EXR files directly and NOT the nuke stream.\n1) Analyse: scans the footage and sets everything under 'advanced' to the best guess\n2) Solve: creates a Vignette node each time (plate / V)\nThis node's own output is V from the last solve; the values are under 'result'."}
+ addUserKnob {26 "" +STARTLINE}
+ addUserKnob {22 analyse l "  Analyse  " T "import vignette_solve\nvignette_solve.analyse(nuke.thisNode())" +STARTLINE}
+ addUserKnob {22 solve l "  Solve  " -STARTLINE T "import vignette_solve\nvignette_solve.solve(nuke.thisNode())"}
+ addUserKnob {26 analysis_status l "" +STARTLINE T "not analysed yet"}
+ addUserKnob {1 analysis_json +INVISIBLE}
+ addUserKnob {26 "" +STARTLINE}
+ addUserKnob {20 advanced l "advanced (set by Analyse)" n 1}
+ advanced 0
+ addUserKnob {26 d5 l "" +STARTLINE T analysis}
+ addUserKnob {26 analysis_info l "" +STARTLINE T "not analysed yet"}
+ addUserKnob {26 d6 l "" +STARTLINE T settings}
+ addUserKnob {4 flow_source l "flow source" M {"(press Analyse)"}}
+ addUserKnob {26 d1 l "" +STARTLINE T "solve range"}
+ addUserKnob {3 solve_first l "first frame"}
+ solve_first 1001
+ addUserKnob {3 solve_last l "last frame" -STARTLINE}
+ solve_last 1100
+ addUserKnob {3 stride l "stride (layer gap for direct, chain length for chain)"}
+ stride 64
+ addUserKnob {3 num_samples l samples -STARTLINE}
+ num_samples 12
+ addUserKnob {4 flow_mode l "flow mode" M {"direct (fXX layer)" "chain (f01 layer)"}}
+ addUserKnob {26 d2 l "" +STARTLINE T "flow channels (set by flow source; full names incl. the fXX layer)"}
+ addUserKnob {1 n_u_channel l n_u}
+ n_u_channel smartvector_f64_v01.n_u
+ addUserKnob {1 n_v_channel l n_v -STARTLINE}
+ n_v_channel smartvector_f64_v01.n_v
+ addUserKnob {1 p_u_channel l p_u}
+ p_u_channel smartvector_f64_v01.p_u
+ addUserKnob {1 p_v_channel l p_v -STARTLINE}
+ p_v_channel smartvector_f64_v01.p_v
+ addUserKnob {7 flow_v_sign l "flow v sign"}
+ flow_v_sign -1
+ addUserKnob {7 fb_thresh l "fb thresh" -STARTLINE}
+ fb_thresh 1.5
+ addUserKnob {26 d3 l "" +STARTLINE T fit}
+ addUserKnob {3 order l "poly order (2 = k1,k2   3 = +k3)"}
+ order 2
+ addUserKnob {7 reg_strength l "reg strength" -STARTLINE}
+ reg_strength 0.5
+ addUserKnob {6 fit_aniso l "anamorphic (fit an elliptical vignette; off = spherical)" +STARTLINE}
+ fit_aniso true
+ addUserKnob {20 endGroup n -1}
+ addUserKnob {20 result l "result (set by Solve)" n 1}
+ result 0
+ addUserKnob {26 result_info l "solved with" T "not solved yet"}
+ addUserKnob {7 k1}
+ addUserKnob {7 k2 -STARTLINE}
+ addUserKnob {7 k3 -STARTLINE}
+ addUserKnob {7 log_aniso l "log aniso" -STARTLINE}
+ addUserKnob {22 create_node l "Create Vignette node" T "import vignette_solve\nvignette_solve.create_vignette_node(nuke.thisNode())" +STARTLINE}
+ addUserKnob {20 endGroup_result l endGroup n -1}
+ addUserKnob {26 "" +STARTLINE}
+ addUserKnob {26 author l "" +STARTLINE T "Erik Schneider / erik@bewegtbildbau.de"}
+ addUserKnob {26 version l "" +STARTLINE T "bamDeVe 1.0 / Thank you Lumatic!"}
+}
+ Input {
+  inputs 0
+  name flow
+  xpos 150
+  ypos -120
+  number 1
+ }
+ Input {
+  inputs 0
+  name plate
+  xpos 0
+  ypos -120
+ }
+ Expression {
+  temp_name0 hd
+  temp_expr0 0.5*sqrt(width*width+height*height)
+  temp_name1 a
+  temp_expr1 exp(parent.log_aniso)
+  temp_name2 rx
+  temp_expr2 a*((x-(width-1)/2)/hd)
+  temp_name3 ry
+  temp_expr3 ((y-(height-1)/2)/hd)/a
+  expr0 max(0.001,1+parent.k1*(rx*rx+ry*ry)+parent.k2*pow(rx*rx+ry*ry,2)+parent.k3*pow(rx*rx+ry*ry,3))
+  expr1 max(0.001,1+parent.k1*(rx*rx+ry*ry)+parent.k2*pow(rx*rx+ry*ry,2)+parent.k3*pow(rx*rx+ry*ry,3))
+  expr2 max(0.001,1+parent.k1*(rx*rx+ry*ry)+parent.k2*pow(rx*rx+ry*ry,2)+parent.k3*pow(rx*rx+ry*ry,3))
+  expr3 1
+  name VignetteField
+  xpos 0
+ }
+ Output {
+  name Output1
+  xpos 0
+  ypos 120
+ }
+end_group
