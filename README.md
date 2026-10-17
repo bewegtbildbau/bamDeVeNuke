@@ -1,6 +1,7 @@
 # bamDeVe 1.0
 
 Developed by Erik Schneider / erik@bewegtbildbau.de
+
 Developed at Lumatic / https://lumatic.xyz/
 
 Estimate a lens vignette from motion entirely inside Nuke.
