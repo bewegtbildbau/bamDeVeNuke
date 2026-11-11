@@ -1,0 +1,2 @@
+# optimistic version for Numpy / tested with Numpy 2.4.6 in Nuke 17.0v23
+numpy>=1.21
